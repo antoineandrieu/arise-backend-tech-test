@@ -4,19 +4,19 @@ services:
     image: ghcr.io/arise-travel/arise-backend-test-graphql-server:latest
     ports:
       - "4000:4000"
-  # gmah-adapter:
-  #   image: node:16-alpine
-  #   environment:
-  #     - GRAPHQL_ENDPOINT=http://arise-backend:4000/graphql
-  #     - NODE_ENV=development
-  #   ports:
-  #     - "8080:8080"
-  #   user: ${UID}
-  #   working_dir: /app
-  #   volumes:
-  #     - ./:/app
-  #   ulimits:
-  #     nofile:
-  #       soft: 98304
-  #       hard: 98304
-  #   command: ["sh", "-c", "sleep 10 && yarn && yarn start:dev"]
+  gmah-adapter:
+    image: node:16-alpine
+    environment:
+      - GRAPHQL_ENDPOINT=http://arise-backend:4000/graphql
+      - NODE_ENV=development
+    ports:
+      - "8080:8080"
+    user: ${UID}
+    working_dir: /app
+    volumes:
+      - ./:/app
+    ulimits:
+      nofile:
+        soft: 98304
+        hard: 98304
+    command: ["sh", "-c", "sleep 10 && yarn && yarn start:dev"]
