@@ -14,12 +14,38 @@ const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
   link: new HttpLink({ uri: process.env.GRAPHQL_ENDPOINT, fetch }),
 });
 
-const GET_AVAILABILITIES = gql`
-  query {
-    properties(
-      query: {
-        partnerExternalRefs: { partner: "GMAH", externalIds: ["61102"] }
+const GET_PRODUCTS_BY_ID = gql`
+  query test($ids: [ID!]!) {
+    nodes(ids: $ids) {
+      ... on Product {
+        id
+        title
+        images(first: 1) {
+          edges {
+            node {
+              originalSrc
+              altText
+            }
+          }
+        }
+        metafield(namespace: "scircula", key: "inDb") {
+          value
+        }
       }
+    }
+  }
+`;
+
+const GET_AVAILABILITIES = gql`
+  query (
+    $partnerExternalRefs: PartnerExternalRefsInput!
+    $startDate: String!
+    $endDate: String!
+    $adults: Int!
+    $children: [Int!]!
+  ) {
+    properties(
+      query: { partnerExternalRefs: $partnerExternalRefs }
       first: 100
     ) {
       edges {
@@ -30,10 +56,10 @@ const GET_AVAILABILITIES = gql`
           url
           photos
           rooms(
-            startDate: "2022-02-17"
-            endDate: "2022-02-20"
-            adults: 2
-            children: [5, 1]
+            startDate: $startDate
+            endDate: $endDate
+            adults: $adults
+            children: $children
             first: 100
           ) {
             edges {
@@ -59,8 +85,20 @@ const GET_AVAILABILITIES = gql`
 `;
 
 export default async function getAvailabilities(ctx: Context) {
+  const { hotel_id, check_in, check_out, adults, children } = ctx.request.query;
   try {
     const result = await client.query({
+      variables: {
+        partnerExternalRefs: { partner: "GMAH", externalIds: hotel_id },
+        startDate: check_in,
+        endDate: check_out,
+        // @ts-ignore
+        adults: parseInt(adults),
+        // @ts-ignore
+        children: children?.map((c) => {
+          return parseInt(c);
+        }),
+      },
       query: GET_AVAILABILITIES,
     });
     // @ts-ignore
@@ -98,8 +136,11 @@ export default async function getAvailabilities(ctx: Context) {
     // @ts-ignore
     ctx.body = data;
   } catch (error) {
-    logger.error(error);
-    ctx.status = 500;
-    ctx.body = error;
+    // @ts-ignore
+    logger.error(error.networkError);
+    // @ts-ignore
+    ctx.body = error.networkError.result.errors;
+    // @ts-ignore
+    ctx.status = error.networkError.statusCode;
   }
 }
