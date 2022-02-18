@@ -39,6 +39,11 @@ const GET_AVAILABILITIES = gql`
             edges {
               node {
                 id
+                price {
+                  amount
+                  currency
+                  decimalPlaces
+                }
               }
             }
           }
@@ -48,18 +53,39 @@ const GET_AVAILABILITIES = gql`
   }
 `;
 
-export default function getAvailabilities(ctx: Context) {
-  client
-    .query({
+export default async function getAvailabilities(ctx: Context) {
+  try {
+    const result = await client.query({
       query: GET_AVAILABILITIES,
-    })
-    .then((result: any) => {
-      logger.info(result.data);
-      ctx.body = result.data;
-    })
-    .catch((error: any) => {
-      logger.error(error);
-      ctx.body = error;
     });
-  ctx.status = 200;
+    // @ts-ignore
+    let data = result.data.properties.edges;
+    logger.info(data);
+    data = data.map((property: any) => {
+      const hotelProp = property.node;
+      const rooms = hotelProp.rooms.edges.map((room: any) => {
+        return {
+          id: room.node.id,
+          price: room.node.price.amount / 10 ** room.node.price.decimalPlaces,
+          currency: room.node.price.currency,
+        };
+      });
+      return {
+        hotel: {
+          id: hotelProp.id,
+          name: hotelProp.name,
+          url: hotelProp.url,
+          photos: hotelProp.photos,
+        },
+        rooms,
+      };
+    });
+    ctx.status = 200;
+    // @ts-ignore
+    ctx.body = data;
+  } catch (error) {
+    logger.error(error);
+    ctx.status = 500;
+    ctx.body = error;
+  }
 }
