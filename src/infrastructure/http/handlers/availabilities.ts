@@ -39,6 +39,11 @@ const GET_AVAILABILITIES = gql`
             edges {
               node {
                 id
+                name
+                description
+                photos {
+                  url
+                }
                 price {
                   amount
                   currency
@@ -66,8 +71,16 @@ export default async function getAvailabilities(ctx: Context) {
       const rooms = hotelProp.rooms.edges.map((room: any) => {
         return {
           id: room.node.id,
-          price: room.node.price.amount / 10 ** room.node.price.decimalPlaces,
-          currency: room.node.price.currency,
+          room_name: room.node.name,
+          description: room.node.description,
+          photos: room.node.photos.map((photo: any) => {
+            return photo.url;
+          }),
+          price: {
+            currency: room.node.price.currency,
+            amount:
+              room.node.price.amount / 10 ** room.node.price.decimalPlaces,
+          },
         };
       });
       return {
@@ -76,6 +89,7 @@ export default async function getAvailabilities(ctx: Context) {
           name: hotelProp.name,
           url: hotelProp.url,
           photos: hotelProp.photos,
+          country: hotelProp.country,
         },
         rooms,
       };
