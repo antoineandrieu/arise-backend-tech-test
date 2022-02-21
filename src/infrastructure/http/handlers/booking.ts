@@ -95,11 +95,6 @@ export default async function postBooking(ctx: Context) {
     ctx.body = data;
   } catch (error) {
     logger.error(error);
-    // @ts-ignore
-    logger.error(error.networkError);
-    // @ts-ignore
-    ctx.body = error.networkError.result.errors;
-    // @ts-ignore
-    ctx.status = error.networkError.statusCode;
+    ctx.status = 500;
   }
 }

@@ -82,9 +82,6 @@ type PropertiesQueryInput = {
 
 export default async function getAvailabilities(ctx: Context) {
   const { hotel_id, check_in, check_out, adults, children } = ctx.request.query;
-  if (!hotel_id && !check_in && !check_out && !adults) {
-    ctx.throw(400, "Missing query params");
-  }
   // Format children field
   let childrenField: number[] = [];
   if (typeof children === "string") {
@@ -144,8 +141,12 @@ export default async function getAvailabilities(ctx: Context) {
       });
       ctx.status = 200;
       ctx.body = data;
+    } else {
+      ctx.status = 404;
+      ctx.body = {
+        message: "No room found",
+      };
     }
-    ctx.status = 404;
   } catch (error) {
     logger.error(error);
     //@ts-ignore

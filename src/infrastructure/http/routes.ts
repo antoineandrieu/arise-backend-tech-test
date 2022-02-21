@@ -4,12 +4,14 @@ import path from "path";
 import yamljs from "yamljs";
 import getAvailabilities from "./handlers/availabilities";
 import postBooking from "./handlers/booking";
+import validateAvailabilities from "./middleware/availabilities";
+import validateBooking from "./middleware/booking";
 
 const router = new Router();
 
-router.get("/availabilities", getAvailabilities);
+router.get("/availabilities", validateAvailabilities, getAvailabilities);
 
-router.post("/booking", postBooking);
+router.post("/booking", validateBooking, postBooking);
 
 router.get(
   "/docs",
