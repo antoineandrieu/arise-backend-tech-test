@@ -1,40 +1,18 @@
-import { Context } from "koa";
 import {
   ApolloClient,
-  HttpLink,
   gql,
+  HttpLink,
   InMemoryCache,
   NormalizedCacheObject,
 } from "@apollo/client/core";
 import fetch from "cross-fetch";
+import { Context } from "koa";
 import logger from "../../../logger";
 
 const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
   cache: new InMemoryCache({}),
   link: new HttpLink({ uri: process.env.GRAPHQL_ENDPOINT, fetch }),
 });
-
-const GET_PRODUCTS_BY_ID = gql`
-  query test($ids: [ID!]!) {
-    nodes(ids: $ids) {
-      ... on Product {
-        id
-        title
-        images(first: 1) {
-          edges {
-            node {
-              originalSrc
-              altText
-            }
-          }
-        }
-        metafield(namespace: "scircula", key: "inDb") {
-          value
-        }
-      }
-    }
-  }
-`;
 
 const GET_AVAILABILITIES = gql`
   query (
@@ -51,6 +29,9 @@ const GET_AVAILABILITIES = gql`
       edges {
         node {
           id
+          partnerReferences {
+            externalId
+          }
           name
           country
           url
@@ -86,6 +67,14 @@ const GET_AVAILABILITIES = gql`
 
 export default async function getAvailabilities(ctx: Context) {
   const { hotel_id, check_in, check_out, adults, children } = ctx.request.query;
+  // Format children field
+  let childrenField: any[] = [];
+  if (typeof children === "string") {
+    childrenField = [parseInt(children)];
+  } else if (typeof children === "object") {
+    // @ts-ignore
+    childrenField = children?.map((child) => parseInt(child));
+  }
   try {
     const result = await client.query({
       variables: {
@@ -95,9 +84,7 @@ export default async function getAvailabilities(ctx: Context) {
         // @ts-ignore
         adults: parseInt(adults),
         // @ts-ignore
-        children: children?.map((c) => {
-          return parseInt(c);
-        }),
+        children: childrenField,
       },
       query: GET_AVAILABILITIES,
     });
@@ -124,6 +111,7 @@ export default async function getAvailabilities(ctx: Context) {
       return {
         hotel: {
           id: hotelProp.id,
+          partner_reference: hotelProp.partnerReferences[0].externalId,
           name: hotelProp.name,
           url: hotelProp.url,
           photos: hotelProp.photos,
@@ -136,6 +124,7 @@ export default async function getAvailabilities(ctx: Context) {
     // @ts-ignore
     ctx.body = data;
   } catch (error) {
+    logger.error(error);
     // @ts-ignore
     logger.error(error.networkError);
     // @ts-ignore
