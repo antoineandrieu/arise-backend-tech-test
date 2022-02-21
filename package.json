@@ -16,6 +16,7 @@
     "test": "jest"
   },
   "devDependencies": {
+    "@types/graphql": "^14.5.0",
     "@types/koa": "^2.13.4",
     "@types/koa-bodyparser": "^4.3.5",
     "@types/koa-json": "^2.0.20",
@@ -25,6 +26,7 @@
     "@types/yamljs": "^0.2.31",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
+    "apollo": "^2.33.9",
     "eslint": "^8.6.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.3.0",
