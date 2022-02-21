@@ -94,6 +94,18 @@ paths:
                 room_type_partner_ref:
                   description: Partner reference of the Room Type being booked
                   type: string
+                check_in:
+                  description: Check-in date (YYYY-MM-DD)
+                  required: true
+                  schema:
+                    type: string
+                    format: date
+                check_out:
+                  description: Check-out date (YYYY-MM-DD)
+                  required: true
+                  schema:
+                    type: string
+                    format: date
                 primary_contact:
                   type: object
                   properties:

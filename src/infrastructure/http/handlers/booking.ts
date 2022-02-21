@@ -20,26 +20,69 @@ const CREATE_BOOKING = gql`
       id
       checkIn
       checkOut
+      contactPerson {
+        firstName
+        lastName
+      }
+      price {
+        currency
+        amount
+        decimalPlaces
+      }
+      property {
+        id
+        name
+        country
+        url
+        photos
+        partnerReferences {
+          partner
+          externalId
+        }
+      }
+      room {
+        id
+        name
+        description
+        photos {
+          url
+          caption
+        }
+        price {
+          currency
+          amount
+          decimalPlaces
+        }
+        remaining
+      }
     }
   }
 `;
 
 export default async function postBooking(ctx: Context) {
-  const { hotel_id, check_in, check_out, adults, children } = ctx.request.query;
+  logger.debug(ctx.request.body);
+  const {
+    hotel_partner_ref,
+    room_type_partner_ref,
+    check_in,
+    check_out,
+    primary_contact,
+    adults,
+    children,
+    price,
+  } = ctx.request.body;
   try {
     const result = await client.mutate({
       variables: {
         payload: {
-          hotelId: "b463b8bb-76cf-46a9-b266-5ab5730b69ba",
-          roomId: "cdf8f4f7-01c6-44a8-8441-18f79d6aa608",
-          checkIn: "2022-02-17",
-          checkOut: "2022-02-20",
-          adults: 2,
-          price: {
-            amount: 9115,
-            currency: "EUR",
-            decimalPlaces: 2,
-          },
+          hotelId: hotel_partner_ref,
+          roomId: room_type_partner_ref,
+          checkIn: check_in,
+          checkOut: check_out,
+          adults,
+          children,
+          price,
+          contactPerson: primary_contact,
         },
       },
       mutation: CREATE_BOOKING,
@@ -47,7 +90,7 @@ export default async function postBooking(ctx: Context) {
     // @ts-ignore
     let data = result.data.createReservation;
     logger.info(data);
-    ctx.status = 200;
+    ctx.status = 201;
     // @ts-ignore
     ctx.body = data;
   } catch (error) {
