@@ -1,12 +1,12 @@
-import { Context } from "koa";
 import {
   ApolloClient,
-  HttpLink,
   gql,
+  HttpLink,
   InMemoryCache,
   NormalizedCacheObject,
 } from "@apollo/client/core";
 import fetch from "cross-fetch";
+import { Context } from "koa";
 import logger from "../../../logger";
 
 const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
@@ -88,8 +88,30 @@ export default async function postBooking(ctx: Context) {
       mutation: CREATE_BOOKING,
     });
     // @ts-ignore
-    let data = result.data.createReservation;
-    logger.info(data);
+    const rawData = result.data.createReservation;
+    const property = rawData.property;
+    const room = rawData.room;
+    const data = {
+      hotel: {
+        id: property.id,
+        name: property.name,
+        url: property.url,
+        photos: property.photos,
+        country: property.country,
+      },
+      rooms: {
+        id: room.id,
+        room_name: room.name,
+        description: room.description,
+        photos: room.photos.map((photo: any) => {
+          return photo.url;
+        }),
+        price: {
+          currency: room.price.currency,
+          amount: room.price.amount / 10 ** room.price.decimalPlaces,
+        },
+      },
+    };
     ctx.status = 201;
     // @ts-ignore
     ctx.body = data;
