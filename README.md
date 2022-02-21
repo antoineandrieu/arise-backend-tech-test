@@ -29,12 +29,16 @@ I then added the booking request, by testing it first with Altair before adding 
 I had to update openapi definition to add check-in and check-out dates.
 Use ids as partner ref hotel and room.
 
-5. Check input and handle errors
+5. Check input and handle errors - 45min
 
-6. Add TypeScript definitions
+I added custom middlewares to check inputs with [Joi library](https://joi.dev/).
+
+6. Add TypeScript definitions - WIP - 30 min
 
 I downloaded the SDL from Altair and converted it to TypeScript with an [online tool](https://transform.tools/graphql-to-typescript). I then integrated the created types into the app and added the types to the variables. 
 
-6. Handle network errors
+6. Handle advanced errors - To Do
+- Non existant hotel or room id
+- Network error
 
-7. Add authentication
+7. Add authentication - To Do
